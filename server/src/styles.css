@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@theme {  
+    --color-theme-major: white;
+    --color-theme-medium: #ececec;
+    --color-theme-minor: oklch(0.869 0.022 252.894);
+    --color-theme-small: oklch(0.398 0.195 277.366);
+    --color-theme-fancy: oklch(0.696 0.17 162.48);
+    --color-theme-text: black;
+}
+
+.font-funnel-sans {
+    font-family: "Funnel Sans", serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+}
+
+.lilita-one-regular {
+    font-family: "Lilita One", serif;
+    font-weight: 400;
+    font-style: normal;
+}

@@ -1,0 +1,29 @@
+<div class="w-sm bg-theme-medium flex flex-col">
+    <div id="nav_bar" class="flex justify-between bg-theme-minor p-5 pt-2 pb-2">
+        <div class="fixed-element h-10 flex flex-row">
+            <%
+                [{
+                    "icon_name": "lightbulb",
+                    "icon_id": "guide_icon"
+                },{
+                    "icon_name": "gear",
+                    "icon_id": "settings_icon"
+                }].forEach(el => {
+            %>
+                <div id="<%= el.icon_id %>" class="h-full flex flex-col justify-center p-3 bg-theme-text/8 cursor-pointer rounded-md mr-3">
+                    <i class="fa-regular fa-<%= el.icon_name %> text-2xl"></i>
+                </div>
+            <%
+                });
+            %>
+        </div>
+        <div class="h-10 flex flex-row">
+            <div class="h-full flex flex-col justify-center cursor-pointer">
+                <i id="open_menu_icon" class="fa-regular fa-bars text-3xl"></i>
+            </div>
+        </div>
+    </div>
+    <div id="side_content" class="flex-grow">
+        <%- include("sidecontents/folder_selection") %>
+    </div>
+</div>

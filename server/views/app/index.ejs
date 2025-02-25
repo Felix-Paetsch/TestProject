@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="title">EasyFiles</title>
+  <link rel="stylesheet" href="/fonts/fontawesome/main.css">
+  <link rel="stylesheet" href="/styles.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Lilita+One&display=swap" rel="stylesheet">
+</head>
+<body class="font-funnel-sans h-screen w-screen overflow-hidden text-theme-text">
+    <div class="flex flex-row h-full">
+        <%- include("components/sidebar") %>
+        <%- include("components/center") %>
+    </div>
+
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <script>
+        const message_queue = [
+          
+        ];
+
+        tippy('#open_menu_icon', {
+          content: 'Menu',
+        });
+        tippy('#guide_icon', {
+          content: 'Guide',
+        });
+        tippy('#settings_icon', {
+          content: 'Settings',
+        });
+
+        function choose_new_folder(){
+            window.pywebview.api.choose_new_folder()
+        }
+
+        let current_folder = null;
+        let items = null;
+
+        function server_choice_response(res_folder, items){
+          current_folder = res_folder;
+          const str = "- " + items.map(i => i.type + ": " + i.name).join("\n - ");
+          const sc = document.getElementById("side_content");
+          sc.innerText = `
+            Folder: ${ res_folder } \n
+            Items: \n
+            ${str}
+          `
+        }
+
+        function handle_server_response(data){
+            message_queue.push(
+                {"role": "assistant", "content": data.text}
+            );
+
+            if (data.answer_type == "text"){
+                const msg = document.getElementById("messages");
+                msg.insertAdjacentHTML("beforeend", `<p class="p-2 mt-2 bg-red-200"></p>`);
+                msg.lastElementChild.innerText = data.text;
+                
+            } else if (data.answer_type == "execute"){
+                const msg = document.getElementById("messages");
+                let code = data.text.split("```")[1].split("\n");
+                code.shift()
+                code = code.join("\n")
+
+                msg.insertAdjacentHTML("beforeend", `<p class="p-2 mt-2 bg-green-200"></p>`);
+                msg.lastElementChild.innerText = code;
+
+                msg.insertAdjacentHTML("beforeend", `<p class="p-2 mt-2 bg-green-500"></p>`);
+                window.pywebview.api.execute(code).then(res => {
+                  console.log(res);
+                  msg.lastElementChild.innerText = res;
+                });   
+            }
+        }
+
+        const input = document.getElementById('messageInput');
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            const message = input.value;
+
+            const bgd = document.getElementById("msg_background");
+            if (bgd){
+                bgd.insertAdjacentHTML("beforebegin", `<div class="flex-grow w-auto p-5 overflow-auto" id="messages"></div>`)
+                bgd.remove();
+            }
+            const msg = document.getElementById("messages");
+            msg.insertAdjacentHTML("beforeend", `<p class="p-2 mt-2 bg-blue-200"></p>`);
+            msg.lastElementChild.innerText = message;     
+
+            message_queue.push(
+                {"role": "user", "content": message}
+            );
+
+            fetch('/app', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messages: message_queue,
+                dir: current_folder
+              })
+            })
+            .then(res => res.json())
+            .then(data => handle_server_response(data))
+            .catch(err => console.error('Error:', err));
+          }
+        });
+    </script>
+</body>
+</html>
